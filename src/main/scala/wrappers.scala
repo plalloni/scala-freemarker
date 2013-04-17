@@ -7,7 +7,7 @@ import org.apache.commons.beanutils.MethodUtils
 import xml._
 import java.lang.reflect.{Modifier, Field, Method}
 
-class ScalaObjectWrapper extends ObjectWrapper {
+class ScalaObjectWrapper(resolveFields: Boolean = true, resolveMethods: Boolean = true, delegateToDefault: Boolean = false) extends ObjectWrapper {
   override def wrap(obj: Any): TemplateModel = obj match {
       
     // Basic types
@@ -30,7 +30,7 @@ class ScalaObjectWrapper extends ObjectWrapper {
       case num: Number => new SimpleNumber(num)
       case bool: Boolean => if (bool) TemplateBooleanModel.TRUE else TemplateBooleanModel.FALSE
       // Everything else
-      case o => new ScalaBaseWrapper(o, this)
+      case o => new ScalaBaseWrapper(o, this, resolveFields, resolveMethods, delegateToDefault)
     }
 }
 
@@ -122,7 +122,7 @@ class ScalaXmlWrapper(val node: NodeSeq, val wrapper: ObjectWrapper)
   def getAsString: String = node.text
 }
 
-class ScalaBaseWrapper(val obj: Any, val wrapper: ObjectWrapper)
+class ScalaBaseWrapper(val obj: Any, val wrapper: ObjectWrapper, resolveFields: Boolean = true, resolveMethods: Boolean = true, delegateToDefault: Boolean = false)
     extends TemplateHashModel with TemplateScalarModel {
 
   val objectClass = obj.asInstanceOf[Object].getClass
